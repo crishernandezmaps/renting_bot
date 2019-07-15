@@ -1,5 +1,6 @@
 # Keys folders
 *.sh
+crawler/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
