@@ -1,12 +1,30 @@
 #!/usr/bin/env python3
-import tweepy
-import logging
-from config import create_api
+# import tweepy
+# import logging
+# from config import create_api
 import pandas as pd
 import time
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger()
+
+def checking_renting_prices(row,up):
+    try:
+        value_converted_to_int = int(row['valorCLP'])
+        if(value_converted_to_int <= up):
+            return 'Yes'
+        else:
+            return 'No'
+    except:
+        pass
+
+def get_renting_offers(user_price):
+    df = pd.read_csv('https://raw.githubusercontent.com/crishernandezmaps/renting_bot/master/data.csv?token=ABLUCS3UXWXNSRUICHWYLV25GX24Q',sep=',')
+    df['evaluation'] = df.apply(lambda row: checking_renting_prices(row,user_price), axis=1)
+    dataframe_final = df.loc[(df['evaluation'] == 'Yes')]
+    print(dataframe_final)
+    return dataframe_final
+
 
 def check_mentions(api, keywords, since_id):
     logger.info("Retrieving mentions")
@@ -45,22 +63,13 @@ def check_mentions(api, keywords, since_id):
     return new_since_id
 
 def main():
-    api = create_api()
-    since_id = 1
-    while True:
-        # print(since_id)
-        since_id = check_mentions(api, ['wheretolive'], since_id)
-        time.sleep(60)
+    get_renting_offers(465000)
+    # api = create_api()
+    # since_id = 1
+    # while True:
+    #     # print(since_id)
+    #     since_id = check_mentions(api, ['wheretolive'], since_id)
+    #     time.sleep(60)
 
 if __name__ == "__main__":
     main()
-
-
-'''
-Objetivo: valor del arriendo por comuna y su relación con el sueldo miínimo u otra medida de comparación
-- Use Scrapy instead of Bs4
-- Cantidad de Proyectos
-- Valor del arriendo en pesos
-- Localización de la propiedad mas barata
-- Mapa coroplético resultante
-'''
