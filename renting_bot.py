@@ -44,15 +44,16 @@ def check_mentions(api, keywords, since_id):
             returned_name = tweet.user.screen_name
             returned_text = tweet.text
             ammount_from_user = [int(s) for s in returned_text.split() if s.isdigit()]
-            final_info_user = get_renting_offers(ammount_from_user)
+            final_user_ammount = ammount_from_user[0]
+            final_info_user = get_renting_offers(int(final_user_ammount))
 
-            to_tweet = f"Hola @{returned_name}! El total de ofertas de arriendo en Santiago esta semana es de <{final_info_user['total_offer'].split(':')[-1].strip()}>. Lo que destinarias para arriendo te permite acceder a <{final_info_user['your_offer'].split(':')[-1].strip()}> departamentos, lo que representa un <{final_info_user['your_percentage'].split(':')[-1].strip()}> del total de ofertas. Saludos!"
+            to_tweet = f"Hola @{returned_name}! El total de ofertas de arriendo en Santiago esta semana es de <{final_info_user['total_offer'].split(':')[-1].strip()}>. Lo que destinarias para arriendo ({final_user_ammount}) te permite acceder a <{final_info_user['your_offer'].split(':')[-1].strip()}> departamentos, lo que representa un <{final_info_user['your_percentage'].split(':')[-1].strip()}> del total de ofertas. Saludos!"
             logger.info(to_tweet)
 
-            api.update_status(
-                status=to_tweet,
-                in_reply_to_status_id=tweet.id,
-            )
+            # api.update_status(
+            #     status=to_tweet,
+            #     in_reply_to_status_id=tweet.id,
+            # )
 
     return new_since_id
 
