@@ -2,7 +2,11 @@
 *.sh
 portal/
 historical_data/
+heatmap/
+img/
+shapes/
 .DS_Store
+*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
