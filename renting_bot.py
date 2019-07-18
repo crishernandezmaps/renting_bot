@@ -35,8 +35,6 @@ def get_renting_offers(user_price):
     df['valorPesos'] = df['valorCLP']
     df['evaluation'] = df.apply(lambda row: checking_renting_prices(row,user_price), axis=1)
     dataframe_final = df.loc[(df['evaluation'] == 'Yes')]
-    ### Insert here the ranking process ###
-    # dataframe_final.to_csv('toMap.csv',sep=',')
     crs = {'init': 'epsg:4326'}
     # Points 
     geometry_for_points = [Point(xy) for xy in zip(dataframe_final['y'], dataframe_final['x'])]
@@ -125,7 +123,4 @@ def main():
         time.sleep(45)
 
 if __name__ == "__main__":
-    main()
-
-# Todo bien excepto que ahora me arroja 0 en las ofertas. 
-# Arreglar esto mas agregar una imagen, mas cambiarlo de cuenta y todo listo.    
+    main()   
