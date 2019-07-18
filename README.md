@@ -3,7 +3,9 @@ Este bot busca mostrar de forma dinámica, desde diversas fuentes de informació
 
 Escribe tu tweet de la siguiente forma (debe contener al menos estos tres elementos. En cualquier orden):
 
-> @MapotecaAi #dondeArrendar por $450000 (sin puntos ni comas la cifra.)
+> @MapotecaAi #dondeArrendar por $450000
+
+*Sin puntos ni comas la cifra*
 
 Nuestro twitter: https://twitter.com/MapotecaAi
 Nuestra web: http://mapoteca.co
