@@ -25,8 +25,13 @@ def checking_renting_prices(row,up):
 def get_number_in_tweet(incoming_tweet_text): 
     get_all_numbers = re.findall(r'[0-9]+', incoming_tweet_text)
     if(len(get_all_numbers)>0):
-        first_element_from_all_numbers = int(get_all_numbers[0])
-        return first_element_from_all_numbers
+        first_element_from_all_numbers = int(get_all_numbers[0])       
+        if(len(str(first_element_from_all_numbers)) >= 6):
+            return first_element_from_all_numbers
+        elif(len(str(first_element_from_all_numbers)) == 3):
+            return first_element_from_all_numbers * 1000
+        else:
+            return first_element_from_all_numbers
     else:
         None
 
