@@ -112,7 +112,7 @@ def check_mentions(api, keywords, since_id):
                     pass
             else:
                 api.update_status(
-                    status="Por favor dame un número para poder evaluar. El tweet debe ser de la siguiente forma: @MapotecaAi #dondepuedoarrendar 500000 (o el número que desees. Sin puntos)",
+                    status="Por favor dame un número para poder evaluar. El tweet debe ser de la siguiente forma: @Welokat #dondeArremdar 500000 (o el número que desees. Sin puntos)",
                     in_reply_to_status_id=tweet.id
                 )
 
