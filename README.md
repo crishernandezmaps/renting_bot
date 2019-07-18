@@ -7,5 +7,5 @@ Escribe tu tweet de la siguiente forma (debe contener al menos estos tres elemen
 
 *Sin puntos ni comas la cifra*
 
-Nuestro twitter: https://twitter.com/MapotecaAi
-Nuestra web: http://mapoteca.co
+Nuestro twitter: https://twitter.com/Welokat
+Nuestra web: http://welokat.com
