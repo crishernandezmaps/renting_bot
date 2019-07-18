@@ -5,6 +5,9 @@ from config import create_api
 import pandas as pd
 import time
 import re
+import geopandas as gpd
+from shapely.geometry import Point, Polygon
+import shapely.wkt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -27,17 +30,56 @@ def get_number_in_tweet(incoming_tweet_text):
     else:
         None
 
+def check_points_against_polygons(x):
+    r = []
+    for i in list_of_points:
+        if(i.within(x)):
+            r.append(i)
+        else:
+            pass
+    return len(r)
+
 def get_renting_offers(user_price):
     df = pd.read_csv('https://raw.githubusercontent.com/crishernandezmaps/renting_bot/master/data.csv',sep=',')
     df['valorPesos'] = df['valorCLP']
     df['evaluation'] = df.apply(lambda row: checking_renting_prices(row,user_price), axis=1)
     dataframe_final = df.loc[(df['evaluation'] == 'Yes')]
-    dataframe_final.to_csv('toMap.csv',sep=',')
+    ### Insert here the ranking process ###
+    # dataframe_final.to_csv('toMap.csv',sep=',')
+    crs = {'init': 'epsg:4326'}
+    # Points 
+    geometry_for_points = [Point(xy) for xy in zip(dataframe_final['y'], dataframe_final['x'])]
+    gdf_points = gpd.GeoDataFrame(dataframe_final, crs=crs, geometry=geometry_for_points)
+    list_of_points = gdf_points.geometry.values
+
+    # Polygons
+    path_to_comunas = r'comunas_RM.csv'
+    polygons = pd.read_csv(path_to_comunas,sep=',')
+    geometry_for_polygons = polygons['WKT'].map(shapely.wkt.loads)
+    polygons = polygons.drop('WKT', axis=1)
+    gdf_polygons = gpd.GeoDataFrame(polygons, crs=crs, geometry=geometry_for_polygons)
+    list_of_polygons = gdf_polygons.geometry.values    
+
+    gdf_polygons['freq'] = gdf_polygons['geometry'].map(check_points_against_polygons)
+    first_five_comunas = gdf_polygons.sort_values(['freq'],ascending=False).head(5)
+    first_five_comunas['total'] = first_five_comunas['NOM_COMUNA'] + ': ' + first_five_comunas['freq'].astype('str')
+    resultant_object = {
+        "first_place":first_five_comunas.total.values[0],
+        "second_place":first_five_comunas.total.values[1],
+        "third_place":first_five_comunas.total.values[2],
+        "fourth_place":first_five_comunas.total.values[3],    
+        "fifth_place":first_five_comunas.total.values[4]   
+    }    
 
     resulting_info = {
-        'total_offer': 'Total Ofertas: {}'.format(len(df.valorCLP.values)),
-        'your_offer': 'Ofertas para tu capacidad de arriendo: {}'.format(len(dataframe_final.valorCLP.values)),
-        'your_percentage': '(%)Ofertas para tu capacidad de arriendo: {}%'.format(round(100*(len(dataframe_final.valorCLP.values)/len(df.valorCLP.values)),3))
+        "total_offer": "Total Ofertas: {}".format(len(df.valorCLP.values)),
+        "your_offer": "Ofertas para tu capacidad de arriendo: {}".format(len(dataframe_final.valorCLP.values)),
+        "your_percentage": "(%)Ofertas para tu capacidad de arriendo: {}%".format(round(100*(len(dataframe_final.valorCLP.values)/len(df.valorCLP.values)),3)),
+        "one":resultant_object["first_place"],
+        "two":resultant_object["second_place"],        
+        "three":resultant_object["third_place"],
+        "four":resultant_object["fourth_place"],
+        "five":resultant_object["fifth_place"]        
     } 
     return resulting_info
 
@@ -55,18 +97,15 @@ def check_mentions(api, keywords, since_id):
             ammount_from_user = get_number_in_tweet(returned_text)
             if(ammount_from_user):
                 final_info_user = get_renting_offers(ammount_from_user)
-                to_tweet = f"Hola @{returned_name}! El total de ofertas de arriendo en Santiago esta semana es de <{final_info_user['total_offer'].split(':')[-1].strip()}>. Lo que destinarias para arriendo ({ammount_from_user}) te permite acceder a <{final_info_user['your_offer'].split(':')[-1].strip()}> departamentos, lo que representa un <{final_info_user['your_percentage'].split(':')[-1].strip()}> del total de ofertas para esta semana. Saludos!"
+                to_tweet = f"Hola @{returned_name}! El total de ofertas de arriendo en Santiago esta semana es de <{final_info_user['total_offer'].split(':')[-1].strip()}>. Lo que destinarias para arriendo ({ammount_from_user}) te permite acceder a <{final_info_user['your_offer'].split(':')[-1].strip()}> departamentos, lo que representa un <{final_info_user['your_percentage'].split(':')[-1].strip()}> del total de ofertas para esta semana. Saludos! El ranking de comunas: {final_info_user['one']}, {final_info_user['two']}, {final_info_user['three']}, {final_info_user['four']}, y {final_info_user['five']}."
                 logger.info(to_tweet)
 
-                # api.update_status
-                api.update_with_media(
-                    'img/tree.jpg',
+                api.update_status(
                     status=to_tweet,
                     in_reply_to_status_id=tweet.id
                 )
             else:
-                api.update_with_media(
-                    'img/tree.jpg',
+                api.update_status(
                     status="Por favor dame un número para poder evaluar. El tweet debe ser de la siguiente forma: @crishernandezco #dondepuedoarrendar 500000 (o el número que desees. Sin punto)",
                     in_reply_to_status_id=tweet.id
                 )
