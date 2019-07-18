@@ -31,7 +31,7 @@ def get_number_in_tweet(incoming_tweet_text):
         None
 
 def get_renting_offers(user_price):
-    df = pd.read_csv('https://raw.githubusercontent.com/crishernandezmaps/renting_bot/master/data.csv',sep=',')
+    df = pd.read_csv('https://raw.githubusercontent.com/crishernandezmaps/renting_bot/master/data/data.csv',sep=',')
     df['valorPesos'] = df['valorCLP']
     df['evaluation'] = df.apply(lambda row: checking_renting_prices(row,user_price), axis=1)
     dataframe_final = df.loc[(df['evaluation'] == 'Yes')]
@@ -42,8 +42,7 @@ def get_renting_offers(user_price):
     list_of_points = gdf_points.geometry.values
 
     # Polygons
-    path_to_comunas = r'comunas_RM.csv'
-    polygons = pd.read_csv(path_to_comunas,sep=',')
+    polygons = pd.read_csv('https://raw.githubusercontent.com/crishernandezmaps/renting_bot/master/data/comunas_RM.csv',sep=',')
     geometry_for_polygons = polygons['WKT'].map(shapely.wkt.loads)
     polygons = polygons.drop('WKT', axis=1)
     gdf_polygons = gpd.GeoDataFrame(polygons, crs=crs, geometry=geometry_for_polygons)
@@ -119,7 +118,7 @@ def main():
     api = create_api()
     since_id = 1
     while True:
-        since_id = check_mentions(api, ['dondepuedoarrendar'], since_id)
+        since_id = check_mentions(api, ['dondeArrendar'], since_id)
         time.sleep(45)
 
 if __name__ == "__main__":
