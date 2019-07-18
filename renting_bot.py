@@ -30,15 +30,6 @@ def get_number_in_tweet(incoming_tweet_text):
     else:
         None
 
-def check_points_against_polygons(x):
-    r = []
-    for i in list_of_points:
-        if(i.within(x)):
-            r.append(i)
-        else:
-            pass
-    return len(r)
-
 def get_renting_offers(user_price):
     df = pd.read_csv('https://raw.githubusercontent.com/crishernandezmaps/renting_bot/master/data.csv',sep=',')
     df['valorPesos'] = df['valorCLP']
@@ -58,7 +49,16 @@ def get_renting_offers(user_price):
     geometry_for_polygons = polygons['WKT'].map(shapely.wkt.loads)
     polygons = polygons.drop('WKT', axis=1)
     gdf_polygons = gpd.GeoDataFrame(polygons, crs=crs, geometry=geometry_for_polygons)
-    list_of_polygons = gdf_polygons.geometry.values    
+    list_of_polygons = gdf_polygons.geometry.values   
+
+    def check_points_against_polygons(x):
+        r = []
+        for i in list_of_points:
+            if(i.within(x)):
+                r.append(i)
+            else:
+                pass
+        return len(r) 
 
     gdf_polygons['freq'] = gdf_polygons['geometry'].map(check_points_against_polygons)
     first_five_comunas = gdf_polygons.sort_values(['freq'],ascending=False).head(5)
@@ -74,7 +74,7 @@ def get_renting_offers(user_price):
     resulting_info = {
         "total_offer": "Total Ofertas: {}".format(len(df.valorCLP.values)),
         "your_offer": "Ofertas para tu capacidad de arriendo: {}".format(len(dataframe_final.valorCLP.values)),
-        "your_percentage": "(%)Ofertas para tu capacidad de arriendo: {}%".format(round(100*(len(dataframe_final.valorCLP.values)/len(df.valorCLP.values)),3)),
+        "your_percentage": "(%)Ofertas para tu capacidad de arriendo: {}%".format(round(100*(len(dataframe_final.valorCLP.values)/len(df.valorCLP.values)),0)),
         "one":resultant_object["first_place"],
         "two":resultant_object["second_place"],        
         "three":resultant_object["third_place"],
@@ -97,16 +97,20 @@ def check_mentions(api, keywords, since_id):
             ammount_from_user = get_number_in_tweet(returned_text)
             if(ammount_from_user):
                 final_info_user = get_renting_offers(ammount_from_user)
-                to_tweet = f"Hola @{returned_name}! El total de ofertas de arriendo en Santiago esta semana es de <{final_info_user['total_offer'].split(':')[-1].strip()}>. Lo que destinarias para arriendo ({ammount_from_user}) te permite acceder a <{final_info_user['your_offer'].split(':')[-1].strip()}> departamentos, lo que representa un <{final_info_user['your_percentage'].split(':')[-1].strip()}> del total de ofertas para esta semana. Saludos! El ranking de comunas: {final_info_user['one']}, {final_info_user['two']}, {final_info_user['three']}, {final_info_user['four']}, y {final_info_user['five']}."
+                to_tweet = f"@{returned_name} El Total de arriendos esta semana es de {final_info_user['total_offer'].split(':')[-1].strip()}. Con ese monto de arriendo ({ammount_from_user}) accedes a {final_info_user['your_offer'].split(':')[-1].strip()} deptos ({final_info_user['your_percentage'].split(':')[-1].strip()}). Ranking de ofertas por comuna(top5): {final_info_user['one']}, {final_info_user['two']}, {final_info_user['three']}, {final_info_user['four']}, {final_info_user['five']}"
                 logger.info(to_tweet)
 
-                api.update_status(
-                    status=to_tweet,
-                    in_reply_to_status_id=tweet.id
-                )
+                if(len(to_tweet)<=280):
+                    api.update_status(
+                        status=to_tweet,
+                        in_reply_to_status_id=tweet.id
+                    )
+                    print('success!')
+                else:
+                    pass
             else:
                 api.update_status(
-                    status="Por favor dame un número para poder evaluar. El tweet debe ser de la siguiente forma: @crishernandezco #dondepuedoarrendar 500000 (o el número que desees. Sin punto)",
+                    status="Por favor dame un número para poder evaluar. El tweet debe ser de la siguiente forma: @MapotecaAi #dondepuedoarrendar 500000 (o el número que desees. Sin puntos)",
                     in_reply_to_status_id=tweet.id
                 )
 
