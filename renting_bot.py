@@ -94,6 +94,7 @@ def check_mentions(api, keywords, since_id):
         if tweet.in_reply_to_status_id is not None:
             continue
         if any(keyword in tweet.text.lower() for keyword in keywords):
+            print(keyword)
             returned_name = tweet.user.screen_name
             returned_text = tweet.text
             ammount_from_user = get_number_in_tweet(returned_text)
@@ -115,7 +116,6 @@ def check_mentions(api, keywords, since_id):
                     status="Por favor dame un número para poder evaluar. El tweet debe ser de la siguiente forma: @Welokat #dondeArremdar 500000 (o el número que desees. Sin puntos)",
                     in_reply_to_status_id=tweet.id
                 )
-
 
     return new_since_id
 
